@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Productos Lácteos | Tienda Online Oficial</title>
+  
+  <!-- Icono oficial en la pestaña del navegador utilizando tu logo real -->
+  <link class="favicon" rel="icon" type="image/png" href="logo.png">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome para Iconos -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      /* Paleta de colores Premium (Verdes Acero y Bosque Profundo) */
+      --bg: #030e0b;
+      --surface: #08120f;
+      --border: #142823;
+      --text: #f0f6f4;
+      --text-muted: #7da58e;
+      --accent: #10b981;
+      --accent-light: #34d399;
+      --accent-glow: rgba(16, 185, 129, 0.22);
+      --shadow: rgba(0, 0, 0, 0.6);
+      --transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    [data-theme="light"] {
+      --bg: #f4f8f6;
+      --surface: #ffffff;
+      --border: #cfe1dd;
+      --text: #0b1814;
+      --text-muted: #537069;
+      --accent: #059669;
+      --accent-light: #10b981;
+      --accent-glow: rgba(5, 150, 105, 0.08);
+      --shadow: rgba(0, 0, 0, 0.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      transition: var(--transition); 
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* --- DECORACIONES DE FONDO --- */
+    .bg-glow-1 { position: absolute; top: -10%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, rgba(0,0,0,0) 70%); pointer-events: none; z-index: 0; }
+
+    /* --- TOAST DE ALERTA --- */
+    #customToast {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: var(--surface); color: var(--text); padding: 14px 28px; border-radius: 30px;
+      box-shadow: 0 10px 30px var(--shadow); z-index: 3000; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+      opacity: 0; pointer-events: none; font-size: 14px; font-weight: 600; border: 1px solid var(--border);
+    }
+    #customToast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* --- CABECERA --- */
+    header { 
+      padding: 16px 8%; display: flex; justify-content: space-between; align-items: center; 
+      background: rgba(8, 18, 15, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--border);
+    }
+    header[data-theme="light"] { background: rgba(254, 254, 254, 0.85); }
+
+    .logo-container { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); }
+    .logo-img { height: 45px; width: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); }
+    .logo-text { font-size: 22px; font-weight: 800; background: linear-gradient(135deg, var(--text) 40%, var(--accent-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    .nav-actions { display: flex; align-items: center; gap: 15px; }
+    .btn-icon { background: none; border: none; font-size: 18px; color: var(--text); cursor: pointer; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--border); transition: var(--transition); position: relative; }
+    .btn-icon:hover { background: var(--surface); border-color: var(--accent); color: var(--accent-light); }
+    #count { position: absolute; top: 2px; right: 2px; background: var(--accent); color: #fff; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 10px; }
+
+    /* --- FILTROS Y BUSCADOR --- */
+    .shop-controls { max-width: 1200px; width: 100%; margin: 40px auto 20px; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; z-index: 1; }
+    .categories { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+    .categories::-webkit-scrollbar { display: none; }
+    .cat-btn { background: var(--surface); border: 1px solid var(--border); padding: 10px 22px; border-radius: 30px; cursor: pointer; font-weight: 700; font-size: 13px; color: var(--text-muted); transition: var(--transition); white-space: nowrap; }
+    .cat-btn.active, .cat-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    .search-wrapper { position: relative; width: 300px; }
+    .search-wrapper i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+    #search { width: 100%; padding: 12px 15px 12px 42px; border-radius: 30px; border: 1px solid var(--border); background: var(--surface); color: var(--text); outline: none; transition: var(--transition); font-size: 14px; }
+    #search:focus { border-color: var(--accent); }
+
+    /* --- PRODUCTOS --- */
+    main { max-width: 1200px; width: 100%; margin: 0 auto; padding: 20px; flex-grow: 1; z-index: 1; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 25px; }
+    
+    .card { background: var(--surface); border-radius: 20px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 8px 25px var(--shadow); transition: var(--transition); display: flex; flex-direction: column; justify-content: space-between; position: relative; }
+    .card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 12px 30px var(--accent-glow); }
+
+    .img-container { height: 230px; width: 100%; overflow: hidden; display: flex; justify-content: center; align-items: center; background: #ffffff; padding: 12px; position: relative; }
+    .img-container img { max-height: 100%; max-width: 100%; object-fit: contain; transition: transform 0.3s ease; }
+    .card:hover .img-container img { transform: scale(1.04); }
+
+    .pack-tag { position: absolute; bottom: 12px; right: 12px; background: rgba(3, 14, 11, 0.85); color: var(--accent-light); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; border: 1px solid var(--border); }
+
+    .card-body { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; }
+    .card-title { font-size: 16px; font-weight: 800; color: var(--text); line-height: 1.3; margin-bottom: 6px; }
+    .card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.4; margin-bottom: 12px; }
+    
+    .price-row { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 12px; border-top: 1px dashed var(--border); }
+    .price { font-size: 18px; font-weight: 800; color: var(--accent-light); }
+    
+    .btn-add { background: var(--accent); color: #fff; border: none; padding: 10px 18px; border-radius: 30px; font-weight: 700; font-size: 13px; cursor: pointer; transition: var(--transition); display: inline-flex; align-items: center; gap: 8px; }
+    .btn-add:hover { background: #fff; color: #030e0b; }
+
+    /* --- CARRITO DESLIZANTE --- */
+    #drawer { position: fixed; right: -380px; top: 0; width: 360px; height: 100%; background: var(--surface); transition: cubic-bezier(0.4, 0, 0.2, 1) 0.4s; padding: 25px; box-shadow: -10px 0 30px var(--shadow); overflow-y: auto; z-index: 2000; display: flex; flex-direction: column; border-left: 1px solid var(--border); }
+    #drawer.open { right: 0; }
+    .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+    .drawer-close { background: none; border: none; font-size: 14px; color: var(--text-muted); cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 5px; }
+    
+    #cartList { flex-grow: 1; overflow-y: auto; margin-bottom: 20px; }
+    .cart-item { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+    .cart-item-img { width: 50px; height: 50px; object-fit: contain; background: #fff; border-radius: 8px; padding: 4px; border: 1px solid var(--border); }
+    .cart-item-details { flex-grow: 1; }
+    .cart-item-title { font-weight: 800; font-size: 13px; margin-bottom: 3px; }
+    .cart-item-price { color: var(--accent-light); font-weight: 700; font-size: 13px; }
+    
+    .qty-controls { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+    .qty-btn { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer; font-weight: bold; display: grid; place-items: center; font-size: 12px; }
+    .btn-delete { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 16px; padding: 5px; }
+
+    .summary-box { padding-top: 15px; border-top: 1px dashed var(--border); }
+    .summary-line { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--text-muted); }
+    .summary-total { font-size: 18px; color: var(--text); font-weight: 800; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+    
+    #payBtn { width: 100%; background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%); color: #fff; border: none; padding: 14px; border-radius: 30px; font-size: 15px; font-weight: 800; margin-top: 15px; cursor: pointer; transition: var(--transition); }
+    #payBtn:hover { transform: translateY(-2px); }
+
+    /* --- DIALOG MODAL --- */
+    dialog { border: none; border-radius: 20px; padding: 25px; max-width: 440px; width: 90%; margin: auto; background: var(--surface); color: var(--text); border: 1px solid var(--border); box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+    dialog::backdrop { background: rgba(3, 14, 11, 0.85); backdrop-filter: blur(5px); }
+    
+    .step { display: none; }
+    .step.active { display: block; }
+    .step h2 { font-size: 22px; font-weight: 800; margin-bottom: 12px; }
+    .step p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
+    
+    .input-group { margin-bottom: 15px; }
+    .input-group label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--accent-light); margin-bottom: 6px; }
+    .input-group input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; }
+
+    .radio-group { margin: 15px 0; }
+    .radio-label { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; cursor: pointer; transition: var(--transition); font-size: 14px; }
+    .radio-label:hover { background: var(--bg); border-color: var(--accent); }
+    
+    .receipt { background: var(--bg); padding: 15px; border-radius: 12px; border: 1px dashed var(--border); font-family: monospace; font-size: 12px; margin: 15px 0; max-height: 200px; overflow-y: auto; white-space: pre-wrap; color: var(--text-muted); }
+    
+    .btn-download { width: 100%; background: #27ae60; color: white; border: none; padding: 12px; border-radius: 30px; font-weight: 700; margin-top: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+    .dialog-footer { display: flex; justify-content: space-between; margin-top: 25px; gap: 12px; }
+    .btn-dialog { flex: 1; padding: 12px; border-radius: 30px; border: none; font-weight: 700; cursor: pointer; font-size: 14px; }
+    .btn-dialog.next { background: var(--accent); color: #fff; }
+    .btn-dialog.cancel { background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); }
+
+    /* --- FOOTER --- */
+    footer { border-top: 1px solid var(--border); padding: 30px 20px; text-align: center; background: var(--bg); z-index: 1; }
+    footer p { font-size: 13px; color: var(--text-muted); }
+
+    @media (max-width: 768px) {
+      header { padding: 14px 5%; }
+      .shop-controls { flex-direction: column; align-items: stretch; gap: 15px; }
+      .search-wrapper { width: 100%; }
+      #drawer { width: 100%; right: -100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-glow-1"></div>
+  <div id="customToast">Notificación</div>
+
+  <!-- HEADER -->
+  <header id="appHeader">
+    <a href="#" class="logo-container">
+      <img src="logo.png" alt="Logo" class="logo-img">
+      <span class="logo-text">Productos Lácteos</span>
+    </a>
+    <div class="nav-actions">
+      <button class="btn-icon" id="themeBtn" onclick="toggleTheme()" aria-label="Cambiar Tema" title="Cambiar Tema">
+        <i class="fas fa-moon"></i>
+      </button>
+      <button class="btn-icon" id="cartBtn" aria-label="Ver Carrito" title="Ver Carrito">
+        <i class="fas fa-shopping-bag"></i>
+        <span id="count">0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- FILTROS Y BUSQUEDA -->
+  <section class="shop-controls">
+    <div class="categories" id="categoriesContainer">
+      <button class="cat-btn active" onclick="filterCategory('todos')">Todos</button>
+      <button class="cat-btn" onclick="filterCategory('leches')">Leches</button>
+      <button class="cat-btn" onclick="filterCategory('soy_yog')">Soya & Yogurt</button>
+      <button class="cat-btn" onclick="filterCategory('bebidas')">Bebidas</button>
+    </div>
+    <div class="search-wrapper">
+      <i class="fas fa-search"></i>
+      <input id="search" placeholder="Buscar producto..." oninput="handleSearch()">
+    </div>
+  </section>
+
+  <!-- LISTA DE PRODUCTOS -->
+  <main>
+    <div id="products" class="grid"></div>
+  </main>
+
+  <!-- DRAWER CARRITO -->
+  <div id="drawer">
+    <div class="drawer-header">
+      <h2 style="font-size: 18px; font-weight: 800;">Tu Orden</h2>
+      <button class="drawer-close" id="closeDrawerBtn">
+        Volver <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+    <div id="cartList">Carrito vacío</div>
+    <div class="summary-box">
+      <div class="summary-line"><span>Subtotal:</span><span id="subtotalLabel">Bs 0</span></div>
+      <div class="summary-line"><span>Impuestos (IVA 13%):</span><span id="taxLabel">Bs 0</span></div>
+      <div class="summary-line summary-total"><span>Total final:</span><span id="totalLabel">Bs 0</span></div>
+      <div style="font-size: 11px; text-align: center; margin-top: 5px; color: var(--text-muted);">Los precios expuestos corresponden a venta por bolsa / pack cerrado</div>
+      <button id="payBtn">Proceder al Despacho</button>
+    </div>
+  </div>
+
+  <!-- CHECKOUT DIALOG MODAL -->
+  <dialog id="checkoutDlg">
+    <div class="step active" id="step1">
+      <h2>Método de Pago</h2>
+      <p>Selecciona la modalidad para procesar tu orden:</p>
+      <div class="radio-group">
+        <label class="radio-label"><input type="radio" name="payMethod" value="Efectivo" checked> <i class="fas fa-money-bill-wave" style="color:var(--accent-light);"></i> Pago Contra Entrega (Efectivo)</label>
+        <label class="radio-label"><input type="radio" name="payMethod" value="QR"> <i class="fas fa-qrcode" style="color:var(--accent-light);"></i> QR Simple (Transferencia rápida)</label>
+      </div>
+      
+      <div class="input-group">
+        <label for="clientName">Nombre Completo</label>
+        <input type="text" id="clientName" placeholder="Escribe tu nombre" value="Juan Carlos Pérez">
+      </div>
+      <div class="input-group">
+        <label for="clientAddress">Dirección de Entrega (La Paz)</label>
+        <input type="text" id="clientAddress" placeholder="Zona, Calle y Nro de Casa" value="Av. Arce, Edificio Multicentro Nro 2024">
+      </div>
+
+      <div class="dialog-footer">
+        <button class="btn-dialog cancel" onclick="closeCheckout()">Cancelar</button>
+        <button class="btn-dialog next" onclick="goToStep(2)">Continuar</button>
+      </div>
+    </div>
+
+    <div class="step" id="step2">
+      <h2>Comprobante Digital</h2>
+      <p>Tu orden ha sido registrada con éxito. Descarga el ticket para tu control:</p>
+      <div class="receipt" id="receiptContent"></div>
+      <button class="btn-download" onclick="downloadReceipt()">
+        <i class="fas fa-file-download"></i> Descargar Ticket (.TXT)
+      </button>
+      <div class="dialog-footer">
+        <button class="btn-dialog cancel" onclick="goToStep(1)">Atrás</button>
+        <button class="btn-dialog next" onclick="submitToWhatsApp()"><i class="fab fa-whatsapp"></i> Enviar a WhatsApp</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>&copy; 2026 Productos Lácteos & Forma Studio. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    // =========================================================================
+    // 🟢 BASE DE DATOS DE PRODUCTOS CON RUTAS LOCALES A TUS ARCHIVOS SUBIDOS
+    // =========================================================================
+    const productsData = [
+      { id: 0, name: 'Leche Enriquecida A, D, y E', price: 7.30, capacity: '800 ML', category: 'leches', desc: 'Leche enriquecida ultra pasteurizada con vitaminas esenciales.', img: 'leche-kream-naranja.png' },
+      { id: 1, name: 'Leche Deslactosada Kream', price: 8.00, capacity: '800 ML', category: 'leches', desc: 'De fácil digestión, ideal para toda la familia.', img: 'leche-kream-verde.png' },
+      { id: 2, name: 'Alimento Lácteo Lola', price: 7.00, capacity: '900 ML', category: 'leches', desc: 'Excelente valor nutritivo y rendimiento inigualable.', img: 'leche-lola.png' },
+      { id: 3, name: 'Soya Natural Vida Sana', price: 6.00, capacity: '1 Litro', category: 'soy_yog', desc: 'Bebida de soya natural ultra-saludable libre de colesterol.', img: 'vida-sanasoya.png' },
+      { id: 4, name: 'Soya Frutilla Vida Sana', price: 6.00, capacity: '1 Litro', category: 'soy_yog', desc: 'La frescura saludable de la soya con sabor dulce a frutilla.', img: 'vidasanafrutilla.png' },
+      { id: 5, name: 'Soya Banana Vida Sana', price: 6.00, capacity: '1 Litro', category: 'soy_yog', desc: 'La combinación de soya y plátano dulce y nutritivo.', img: 'vidasanabanana.png' },
+      { id: 6, name: 'Soya Chocolate Vida Sana', price: 6.00, capacity: '1 Litro', category: 'soy_yog', desc: 'Bebida de soya con exquisito sabor a cacao y chocolate.', img: 'vidasanachocolate.png' },
+      { id: 7, name: 'Yogurt Frutilla y Durazno 2L', price: 25.00, capacity: '2 Litros', category: 'soy_yog', desc: 'Yogurt cremoso en botella grande sabor frutilla y durazno.', img: 'yogurts 2 li.png' },
+      { id: 8, name: 'Yogurt Chirimoya y Berries 2L', price: 25.00, capacity: '2 Litros', category: 'soy_yog', desc: 'Exquisito sabor tropical chirimoya y frutos rojos.', img: 'yogurts2l.png' },
+      { id: 9, name: 'Yogurt Coco Premium 2L', price: 25.00, capacity: '2 Litros', category: 'soy_yog', desc: 'Yogurt cremoso con un delicioso toque de coco natural.', img: 'yogurt2lcoco.png' },
+      { id: 10, name: 'Leche Saborizada (Avena, Chocolate, Frutilla)', price: 30.00, capacity: 'Bolsa x22u', category: 'leches', desc: 'Prácticas bolsas individuales para llevar la nutrición a todos lados.', img: 'leche-tres-sabores-kream.png' },
+      { id: 11, name: 'Leche Saborizada Especial (Mora, Plátano, etc.)', price: 15.00, capacity: 'Bolsa x11u', category: 'leches', desc: 'Nutritivas bolsas de sabores surtidos muy divertidos.', img: 'leches-cinco-sabores-kream.png' },
+      { id: 12, name: 'Bebida Láctea Power Fruit', price: 12.00, capacity: 'Bolsa x11u', category: 'bebidas', desc: 'Bebida de frutas sabor manzana, durazno y frutilla.', img: 'powerfruits.png' },
+      { id: 13, name: 'Go Gurt Alimento Lácteo', price: 10.00, capacity: 'Bolsa x10u', category: 'soy_yog', desc: 'Sachets individuales sabor frutilla, plátano y durazno.', img: 'gogurts.png' },
+      { id: 14, name: 'Néctar de Frutas Frutos', price: 8.50, capacity: 'Bolsa x11u', category: 'bebidas', desc: 'Delicioso néctar de manzana y durazno listo para tomar.', img: 'jugos-frutos.png' },
+      { id: 15, name: 'Bebida Limonello Sabor Limón', price: 8.50, capacity: 'Bolsa x11u', category: 'bebidas', desc: 'Bebida refrescante cítrica ideal para días calurosos.', img: 'limonello.png' },
+      { id: 16, name: 'Bebida Limón, Naranja y Toronja', price: 8.50, capacity: 'Bolsa x20u', category: 'bebidas', desc: 'Mini bolsas de cítricos ideales para calmar la sed con diversión.', img: 'naranjitos.png' },
+      { id: 17, name: 'Bebida Láctea BeeFruit', price: 4.50, capacity: 'Bolsa x10u', category: 'bebidas', desc: 'Deliciosa bebida de manzana, piña y durazno.', img: 'beetfruits.png' },
+      { id: 18, name: 'Yogurt de Sabores Yogu Stars', price: 18.50, capacity: 'Bolsa x22u', category: 'soy_yog', desc: 'Pequeñas bolsas sabor frutilla y de uva mora.', img: 'yogustars.png' }
+    ];
+
+    let cart = {};
+    let currentCategory = 'todos';
+
+    // RENDERIZAR PRODUCTOS
+    function renderProducts(filterText = '') {
+      const grid = document.getElementById('products');
+      if(!grid) return;
+      grid.innerHTML = '';
+      
+      productsData.forEach(p => {
+        if (currentCategory !== 'todos' && p.category !== currentCategory) return;
+        if (!p.name.toLowerCase().includes(filterText.toLowerCase()) && !p.desc.toLowerCase().includes(filterText.toLowerCase())) return;
+
+        grid.innerHTML += `
+          <div class="card">
+            <div class="img-container">
+              <img src="${p.img}" alt="${p.name}" loading="lazy">
+              <span class="pack-tag">${p.capacity}</span>
+            </div>
+            <div class="card-body">
+              <div style="margin-bottom:12px;">
+                <h3 class="card-title">${p.name}</h3>
+                <p class="card-desc">${p.desc}</p>
+              </div>
+              <div class="price-row">
+                <span class="price">Bs ${p.price.toFixed(2)}</span>
+                <button class="btn-add" onclick="addToCart(${p.id}, event)">
+                  <i class="fas fa-cart-plus"></i> Agregar
+                </button>
+              </div>
+            </div>
+          </div>`;
+      });
+    }
+
+    // FILTRAR POR CATEGORÍA
+    function filterCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+      if(event && event.target) {
+        event.target.classList.add('active');
+      }
+      renderProducts(document.getElementById('search').value);
+    }
+
+    // BUSCADOR EN VIVO
+    window.handleSearch = function() {
+      renderProducts(document.getElementById('search').value);
+    }
+
+    // AGREGAR AL CARRITO
+    function addToCart(id, e) {
+      cart[id] = (cart[id] || 0) + 1;
+      
+      // Animación de partícula voladora
+      const btnRect = e.target.getBoundingClientRect();
+      const cartIcon = document.getElementById('cartBtn').getBoundingClientRect();
+      
+      const fly = document.createElement('div');
+      fly.className = 'fly-effect';
+      fly.textContent = '🥛';
+      fly.style.left = btnRect.left + 'px';
+      fly.style.top = btnRect.top + 'px';
+      document.body.appendChild(fly);
+      
+      setTimeout(() => {
+        fly.style.left = (cartIcon.left + 10) + 'px';
+        fly.style.top = (cartIcon.top + 10) + 'px';
+        fly.style.opacity = '0';
+        fly.style.transform = 'scale(0.3) rotate(360deg)';
+      }, 50);
+      
+      setTimeout(() => fly.remove(), 850);
+      
+      renderCart();
+      showToast("Producto añadido al carrito");
+    }
+
+    // CAMBIAR CANTIDADES
+    function changeQty(id, amt) {
+      if (!cart[id]) return;
+      cart[id] += amt;
+      if (cart[id] <= 0) delete cart[id];
+      renderCart();
+    }
+
+    // ELIMINAR ITEM
+    function deleteItem(id) {
+      delete cart[id];
+      renderCart();
+      showToast("Producto removido");
+    }
+
+    // RENDERIZAR ITEMS DEL CARRITO
+    function renderCart() {
+      let html = '', subtotal = 0, totalItems = 0;
+
+      for (let id in cart) {
+        let q = cart[id];
+        let p = productsData.find(item => item.id == id);
+        if(!p) continue;
+        
+        let cost = q * p.price;
+        subtotal += cost;
+        totalItems += q;
+
+        html += `
+          <div class="cart-item">
+            <div style="width:50px; height:50px; position:relative;">
+              <img src="${p.img}" class="cart-item-img" alt="${p.name}">
+            </div>
+            <div class="cart-item-details">
+              <div class="cart-item-title">${p.name}</div>
+              <div class="cart-item-price">Bs ${cost.toFixed(2)}</div>
+              <div class="qty-controls">
+                <button class="qty-btn" onclick="changeQty(${id}, -1)">-</button>
+                <span style="font-weight:700; font-size:13px;">${q}</span>
+                <button class="qty-btn" onclick="changeQty(${id}, 1)">+</button>
+              </div>
+            </div>
+            <button class="btn-delete" onclick="deleteItem(${id})"><i class="fas fa-trash-alt"></i></button>
+          </div>`;
+      }
+
+      document.getElementById('count').textContent = totalItems;
+      document.getElementById('cartList').innerHTML = html || '<p style="color:var(--text-muted); text-align:center; padding: 40px 0;">Tu carrito está vacío.</p>';
+      
+      let tax = subtotal * 0.13;
+      let total = subtotal + tax;
+
+      document.getElementById('subtotalLabel').textContent = 'Bs ' + subtotal.toFixed(2);
+      document.getElementById('taxLabel').textContent = 'Bs ' + tax.toFixed(2);
+      document.getElementById('totalLabel').textContent = 'Bs ' + total.toFixed(2);
+    }
+
+    // CONTROL DEL TEMA CLARO Y OSCURO
+    function toggleTheme() {
+      const body = document.body;
+      const header = document.getElementById('appHeader');
+      const themeBtn = document.getElementById('themeBtn').querySelector('i');
+      
+      if (body.getAttribute('data-theme') === 'light') {
+        body.removeAttribute('data-theme');
+        header.removeAttribute('data-theme');
+        themeBtn.className = 'fas fa-moon';
+        showToast("Modo Oscuro activado");
+      } else {
+        body.setAttribute('data-theme', 'light');
+        header.setAttribute('data-theme', 'light');
+        themeBtn.className = 'fas fa-sun';
+        showToast("Modo Claro activado");
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('customToast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => { toast.classList.remove('show'); }, 3000);
+    }
+
+    // GESTIÓN DE PASARELA DE CHECKOUT
+    function openCheckout() {
+      if(Object.keys(cart).length === 0) return showToast("Por favor añade productos al carrito primero");
+      goToStep(1);
+      document.getElementById('checkoutDlg').showModal();
+    }
+
+    function closeCheckout() {
+      document.getElementById('checkoutDlg').close();
+    }
+
+    function goToStep(stepNum) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      const targetStep = document.getElementById('step' + stepNum);
+      if(targetStep) targetStep.classList.add('active');
+
+      if(stepNum === 2) {
+        let method = document.querySelector('input[name="payMethod"]:checked').value;
+        let client = document.getElementById('clientName').value.trim() || 'Cliente Distinguido';
+        let address = document.getElementById('clientAddress').value.trim() || 'La Paz, Bolivia';
+        let orderNum = Math.floor(Math.random() * 90000) + 10000;
+        let totalVal = document.getElementById('totalLabel').textContent;
+        
+        let ticket = `=================================\n`;
+        ticket += `         PRODUCTOS LÁCTEOS\n`;
+        ticket += `   Pedidos & Logística La Paz\n`;
+        ticket += `=================================\n`;
+        ticket += `NRO PEDIDO: #LACT-${orderNum}\n`;
+        ticket += `CLIENTE: ${client}\n`;
+        ticket += `DIRECCIÓN: ${address}\n`;
+        ticket += `---------------------------------\n`;
+        for (let id in cart) {
+          let p = productsData.find(item => item.id == id);
+          ticket += `${p.name.padEnd(20, ' ')} x${cart[id]}  (Bs ${(cart[id] * p.price).toFixed(2)})\n`;
+        }
+        ticket += `---------------------------------\n`;
+        ticket += `MÉTODO: ${method}\n`;
+        ticket += `TOTAL A PAGAR: ${totalVal}\n`;
+        ticket += `=================================\n`;
+        
+        document.getElementById('receiptContent').textContent = ticket;
+      }
+    }
+
+    function downloadReceipt() {
+      const text = document.getElementById('receiptContent').textContent;
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'Ticket_Pedido.txt';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function submitToWhatsApp() {
+      let client = document.getElementById('clientName').value.trim() || 'Cliente';
+      let address = document.getElementById('clientAddress').value.trim() || 'La Paz';
+      let method = document.querySelector('input[name="payMethod"]:checked').value;
+      let totalVal = document.getElementById('totalLabel').textContent;
+      
+      let prodMsg = "";
+      for (let id in cart) {
+        let p = productsData.find(item => item.id == id);
+        prodMsg += `• *${p.name}* x${cart[id]} (Bs ${(cart[id] * p.price).toFixed(2)})\n`;
+      }
+
+      let textWhatsApp = `*NUEVO PEDIDO - PRODUCTOS LÁCTEOS* 🥛\n\n`;
+      textWhatsApp += `👤 *Cliente:* ${client}\n`;
+      textWhatsApp += `📍 *Dirección de Entrega:* ${address}\n`;
+      textWhatsApp += `💳 *Método de Pago:* ${method}\n\n`;
+      textWhatsApp += `🛒 *DETALLE DE COMPRA:* \n${prodMsg}\n`;
+      textWhatsApp += `💰 *TOTAL A PAGAR:* ${totalVal}\n\n`;
+      textWhatsApp += `_Por favor, confírmenme el despacho de mi pedido. ¡Gracias!_`;
+
+      const urlWhatsApp = `https://wa.me/59176721293?text=${encodeURIComponent(textWhatsApp)}`;
+      window.open(urlWhatsApp, '_blank');
+      
+      cart = {};
+      renderCart();
+      closeCheckout();
+      document.getElementById('drawer').classList.remove('open');
+    }
+
+    document.getElementById('cartBtn').onclick = () => document.getElementById('drawer').classList.add('open');
+    document.getElementById('closeDrawerBtn').onclick = () => document.getElementById('drawer').classList.remove('open');
+    document.getElementById('payBtn').onclick = openCheckout;
+
+    window.onload = function() {
+      renderProducts();
+    };
+  </script>
+</body>
+</html>
